@@ -1,0 +1,86 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    addressable (2.4.0)
+    attribute_struct (0.3.4)
+      bogo (>= 0.1.31, < 0.3.0)
+    bogo (0.2.4)
+      hashie
+      multi_json
+    bogo-cli (0.2.6)
+      bogo (>= 0.1.6, < 0.6)
+      bogo-config (>= 0.1.15, < 0.5)
+      bogo-ui
+      slop (~> 3)
+    bogo-config (0.2.0)
+      attribute_struct
+      bogo (>= 0.1.4, < 1.0)
+      multi_json
+      multi_xml
+    bogo-ui (0.1.16)
+      bogo
+      command_line_reporter
+      paint
+    colored (1.2)
+    command_line_reporter (3.3.6)
+      colored (>= 1.2)
+    domain_name (0.5.20160310)
+      unf (>= 0.0.5, < 1.0.0)
+    graph (2.8.1)
+    hashdiff (0.2.3)
+    hashie (3.4.3)
+    http (1.0.4)
+      addressable (~> 2.3)
+      http-cookie (~> 1.0)
+      http-form_data (~> 1.0.1)
+      http_parser.rb (~> 0.6.0)
+    http-cookie (1.0.2)
+      domain_name (~> 0.5)
+    http-form_data (1.0.1)
+    http_parser.rb (0.6.0)
+    miasma (0.3.2)
+      bogo (>= 0.2.2, < 1.0)
+      http (>= 0.8.12, < 1.1)
+      multi_json
+      multi_xml
+      xml-simple
+    miasma-aws (0.3.2)
+      miasma (>= 0.3.1, < 0.5)
+    miasma-azure (0.1.2)
+    miasma-open-stack (0.1.4)
+    miasma-rackspace (0.1.2)
+      miasma-open-stack
+    multi_json (1.11.2)
+    multi_xml (0.5.5)
+    net-ssh (3.1.1)
+    paint (1.0.1)
+    sfn (2.1.12)
+      bogo-cli (>= 0.2.4, < 0.4)
+      bogo-ui (>= 0.1.13, < 0.4)
+      graph (~> 2.8.1)
+      hashdiff (~> 0.2.2)
+      miasma (>= 0.3.0, < 0.4)
+      miasma-aws (>= 0.3.0, < 0.4)
+      miasma-azure (>= 0.1.0, < 0.3)
+      miasma-open-stack (>= 0.1.0, < 0.3)
+      miasma-rackspace (>= 0.1.0, < 0.3)
+      net-ssh
+      sparkle_formation (>= 2.1.2, < 3)
+    slop (3.6.0)
+    sparkle_formation (2.1.6)
+      attribute_struct (>= 0.3.0, < 0.5)
+      bogo
+      multi_json
+    unf (0.1.4)
+      unf_ext
+    unf_ext (0.0.7.2)
+    xml-simple (1.1.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  sfn
+
+BUNDLED WITH
+   1.10.6
