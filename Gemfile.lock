@@ -4,6 +4,8 @@ GEM
     addressable (2.4.0)
     attribute_struct (0.3.4)
       bogo (>= 0.1.31, < 0.3.0)
+    aws-sdk-core (2.2.35)
+      jmespath (~> 1.0)
     bogo (0.2.4)
       hashie
       multi_json
@@ -38,6 +40,9 @@ GEM
       domain_name (~> 0.5)
     http-form_data (1.0.1)
     http_parser.rb (0.6.0)
+    jmespath (1.2.4)
+      json_pure (>= 1.8.1)
+    json_pure (1.8.3)
     miasma (0.3.2)
       bogo (>= 0.2.2, < 1.0)
       http (>= 0.8.12, < 1.1)
@@ -67,6 +72,12 @@ GEM
       net-ssh
       sparkle_formation (>= 2.1.2, < 3)
     slop (3.6.0)
+    sparkle-pack-aws-amis (0.1.0)
+      sparkle_formation
+    sparkle-pack-aws-availability-zones (0.1.2)
+      aws-sdk-core (~> 2.2)
+    sparkle-pack-aws-vpc (0.1.6)
+      sparkle-pack-aws-availability-zones
     sparkle_formation (2.1.6)
       attribute_struct (>= 0.3.0, < 0.5)
       bogo
@@ -80,7 +91,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  sfn
+  sfn (~> 2.0)
+  sparkle-pack-aws-amis (~> 0.1.0)
+  sparkle-pack-aws-vpc (~> 0.1.6)
 
 BUNDLED WITH
    1.10.6

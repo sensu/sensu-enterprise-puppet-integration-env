@@ -1,4 +1,5 @@
 Configuration.new do
+  sparkle_pack [ 'sparkle-pack-aws-availability-zones', 'sparkle-pack-aws-vpc', 'sparkle-pack-aws-amis' ]
   #   Set style of stack nesting
   apply_nesting 'deep'
   #   Enable processing of SparkleFormation templates
