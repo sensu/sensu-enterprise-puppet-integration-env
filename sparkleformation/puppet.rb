@@ -10,6 +10,30 @@ SparkleFormation.new(:puppet).load(:base, :compute).overrides do
           from_port 22
           to_port 22
           ip_protocol 'tcp'
+        },
+        -> {
+          cidr_ip '0.0.0.0/0'
+          from_port 443
+          to_port 443
+          ip_protocol 'tcp'
+        },
+        -> {
+          cidr_ip '0.0.0.0/0'
+          from_port 8081
+          to_port 8081
+          ip_protocol 'tcp'
+        },
+        -> {
+          cidr_ip '0.0.0.0/0'
+          from_port 8140
+          to_port 8140
+          ip_protocol 'tcp'
+        },
+        -> {
+          cidr_ip '0.0.0.0/0'
+          from_port 61613
+          to_port 61613
+          ip_protocol 'tcp'
         }
       )
     end
