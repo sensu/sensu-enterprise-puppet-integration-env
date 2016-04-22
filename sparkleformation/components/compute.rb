@@ -5,6 +5,7 @@ SparkleFormation.component(:compute) do
   parameters do
     ssh_key_name do
       type 'String'
+      default ENV['AWS_KEY_NAME'] if ENV.key?('AWS_KEY_NAME')
     end
 
     vpc_id do
