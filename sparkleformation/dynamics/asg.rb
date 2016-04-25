@@ -7,10 +7,6 @@ SparkleFormation.dynamic(:asg) do |name, config={}|
     end
   end
 
-  # parameters(:internal_zone_sns_topic) do
-  #   type 'String'
-  # end
-
   parameters("#{name}_key_name".to_sym) do
     type 'String'
     default ENV['AWS_KEY_NAME'] if ENV.key?('AWS_KEY_NAME')
@@ -51,11 +47,17 @@ SparkleFormation.dynamic(:asg) do |name, config={}|
       associate_public_ip_address config.fetch(:associate_public_ip_address, 'true')
       iam_instance_profile ref!("#{name}_iam_instance_profile".to_sym)
       security_groups [ config.fetch(:security_groups, ref!("#{name}_ec2_security_group".to_sym)) ].compact.flatten
-
       user_data registry!(:cfn_user_data, name,
         :init_resource => "#{name}_launch_configuration".to_sym,
         :signal_resource => "#{name}_auto_scaling_group".to_sym
         )
+    end
+
+    metadata('AWS::CloudFormation::Init') do
+      _camel_keys_set(:auto_disable)
+      configSets do
+        default []
+      end
     end
   end
 
