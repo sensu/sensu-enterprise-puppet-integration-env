@@ -1,4 +1,7 @@
-SparkleFormation.new(:puppet).load(:base, :compute).overrides do
+SparkleFormation.new(:puppet_enterprise).load(:base, :compute).overrides do
+
+  pe_release = '2016.1.1'
+  pe_release_arch = "puppet-enterprise-#{pe_release}-ubuntu-14.04-amd64"
 
   parameters(:puppet_enterprise_password) do
     type 'String'
@@ -44,7 +47,7 @@ SparkleFormation.new(:puppet).load(:base, :compute).overrides do
     end
   end
 
-  resources(:puppet_instance_profile) do
+  resources(:puppet_enterprise_instance_profile) do
     type 'AWS::IAM::InstanceProfile'
     properties do
       path '/'
@@ -52,7 +55,7 @@ SparkleFormation.new(:puppet).load(:base, :compute).overrides do
     end
   end
 
-  resources(:puppet_ec2_instance) do
+  resources(:puppet_enterprise_ec2_instance) do
     type 'AWS::EC2::Instance'
 
     properties do
@@ -66,36 +69,43 @@ SparkleFormation.new(:puppet).load(:base, :compute).overrides do
         }
       )
       image_id map!(:official_amis, region!, 'trusty')
-      iam_instance_profile ref!(:puppet_instance_profile)
+      iam_instance_profile ref!(:puppet_enterprise_instance_profile)
       key_name ref!(:ssh_key_name)
       user_data registry!(:cfn_user_data, :puppet,
-        :init_resource => :puppet_ec2_instance,
-        :signal_resource => :puppet_ec2_instance
+        :init_resource => :puppet_enterprise_ec2_instance,
+        :signal_resource => :puppet_enterprise_ec2_instance
       )
     end
 
+    creation_policy.resource_signal do
+      count 1
+      timeout 'PT15M'
+    end
+
+    registry!(:configure_aws_hostname)
+    registry!(:configure_ntp)
     metadata('AWS::CloudFormation::Init') do
       _camel_keys_set(:auto_disable)
-      configSets do
-        default [ 'install_puppet_enterprise'  ]
+      configSets do |sets|
+        default [ 'configure_aws_hostname', 'configure_ntp', 'install_puppet_enterprise' ]
       end
       install_puppet_enterprise do
         sources do
-          set!('/usr/src/puppet-enterprise', 'https://s3.amazonaws.com/pe-builds/released/2016.1.1/puppet-enterprise-2016.1.1-ubuntu-14.04-amd64.tar.gz')
+          set!('/usr/src/', "https://s3.amazonaws.com/pe-builds/released/#{pe_release}/#{pe_release_arch}.tar.gz")
         end
-        files('/usr/src/puppet-enterprise/write-answers.sh') do
+        files("/usr/src/#{pe_release_arch}/write-answers.sh") do
           content join!(
             "#!/bin/bash\n",
             "DOMAIN=compute-1.amazonaws.com\n",
             "HOSTNAME=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname | cut -d . -f 1)\n",
             "LOCAL_IPV4=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)\n",
-            "cat <<EOF > /usr/src/puppet-enterprise/answers.txt\n",
+            "cat <<EOF > /usr/src/#{pe_release_arch}/answers.txt\n",
             "q_install=y\n",
             "q_vendor_packages_install=y\n",
             "q_puppetmaster_install=y\n",
             "q_all_in_one_install=y\n",
             "q_puppetagent_certname=$HOSTNAME.$DOMAIN\n",
-            "q_puppetmaster_certname=$HOSNTAME.$DOMAIN\n",
+            "q_puppetmaster_certname=$HOSTNAME.$DOMAIN\n",
             "q_puppetmaster_dnsaltnames=$HOSTNAME,$HOSTNAME.$DOMAIN\n",
             "q_pe_check_for_updates=y\n",
             "q_puppet_enterpriseconsole_httpd_port=443\n",
@@ -103,26 +113,30 @@ SparkleFormation.new(:puppet).load(:base, :compute).overrides do
             "q_database_install=y\n",
             "q_puppetdb_database_name=pe-puppetdb\n",
             "q_puppetdb_database_password=", ref!(:puppet_enterprise_password), "\n",
-            "q_puppetdb_database_user=pe-puppetdb\n"
+            "q_puppetdb_database_user=pe-puppetdb\n",
+            "EOF"
           )
-          mode 00750
+          mode "000750"
         end
 
         commands('00_create_answers_file') do
-          command '/usr/src/puppet-enterprise/write-answers.sh'
+          command "/usr/src/#{pe_release_arch}/write-answers.sh"
         end
 
         commands('01_install_puppet_enterprise') do
-          command '/usr/src/puppet-enterprise/puppet-enterprise-installer -a /usr/src/puppet-enterprise/answers.txt'
+          command "/usr/src/#{pe_release_arch}/puppet-enterprise-installer -a /usr/src/#{pe_release_arch}/answers.txt"
+          test 'test ! -d /opt/puppetlabs'
         end
       end
     end
-    registry!(:configure_aws_hostname)
   end
 
   outputs do
     ssh_address do
-      value join!('ubuntu@', attr!(:puppet_ec2_instance, :public_dns_name))
+      value join!('ubuntu@', attr!(:puppet_enterprise_ec2_instance, :public_dns_name))
+    end
+    puppet_server_hostname do
+      value attr!(:puppet_enterprise_ec2_instance, :public_dns_name)
     end
   end
 
