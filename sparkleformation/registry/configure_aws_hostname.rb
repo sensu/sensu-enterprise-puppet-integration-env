@@ -1,9 +1,6 @@
 SfnRegistry.register(:configure_aws_hostname) do
   metadata('AWS::CloudFormation::Init') do
     _camel_keys_set(:auto_disable)
-    configSets do |sets|
-      sets.default sets.default.push('configure_aws_hostname')
-    end
     configure_aws_hostname do
       files('/etc/resolvconf/resolv.conf.d/tail') do
         # the last 'search' directive in compiled /etc/resolv.conf should win, so bring on the hacks
