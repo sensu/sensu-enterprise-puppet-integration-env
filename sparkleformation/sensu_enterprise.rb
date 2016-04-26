@@ -10,6 +10,8 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
       type 'String'
       default ::SecureRandom.hex
     end
+
+    puppet_security_group_id.type 'String'
   end
 
   resources do
@@ -25,7 +27,7 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
             associate_public_ip_address true
             device_index 0
             subnet_id select!(0, ref!(:public_subnet_ids))
-            group_set [ ref!(:sensu_security_group) ]
+            group_set [ ref!(:sensu_security_group), ref!(:puppet_security_group_id) ]
           }
         )
         registry!(:cfn_user_data, :sensu,
