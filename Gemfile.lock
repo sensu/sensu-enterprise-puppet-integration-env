@@ -4,7 +4,7 @@ GEM
     addressable (2.4.0)
     attribute_struct (0.3.4)
       bogo (>= 0.1.31, < 0.3.0)
-    aws-sdk-core (2.2.35)
+    aws-sdk-core (2.2.36)
       jmespath (~> 1.0)
     bogo (0.2.4)
       hashie
@@ -14,7 +14,7 @@ GEM
       bogo-config (>= 0.1.15, < 0.5)
       bogo-ui
       slop (~> 3)
-    bogo-config (0.2.0)
+    bogo-config (0.2.2)
       attribute_struct
       bogo (>= 0.1.4, < 1.0)
       multi_json
@@ -49,18 +49,18 @@ GEM
       multi_json
       multi_xml
       xml-simple
-    miasma-aws (0.3.2)
+    miasma-aws (0.3.4)
       miasma (>= 0.3.1, < 0.5)
-    miasma-azure (0.1.2)
+    miasma-azure (0.1.4)
     miasma-open-stack (0.1.4)
     miasma-rackspace (0.1.2)
       miasma-open-stack
-    multi_json (1.11.2)
+    multi_json (1.11.3)
     multi_xml (0.5.5)
     net-ssh (3.1.1)
     paint (1.0.1)
-    sfn (2.1.12)
-      bogo-cli (>= 0.2.4, < 0.4)
+    sfn (2.2.0)
+      bogo-cli (>= 0.2.5, < 0.4)
       bogo-ui (>= 0.1.13, < 0.4)
       graph (~> 2.8.1)
       hashdiff (~> 0.2.2)
@@ -78,7 +78,7 @@ GEM
       aws-sdk-core (~> 2.2)
     sparkle-pack-aws-vpc (0.1.6)
       sparkle-pack-aws-availability-zones
-    sparkle_formation (2.1.6)
+    sparkle_formation (2.1.8)
       attribute_struct (>= 0.3.0, < 0.5)
       bogo
       multi_json
