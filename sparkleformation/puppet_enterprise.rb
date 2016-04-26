@@ -8,39 +8,39 @@ SparkleFormation.new(:puppet_enterprise).load(:base, :compute).overrides do
     default 'secret'
   end
 
-  dynamic!(:ec2_security_group, :puppet) do
-    properties do
-      group_description 'Puppet Compute Instances'
-      vpc_id ref!(:vpc_id)
-      security_group_ingress array!(
-        -> {
-          cidr_ip '0.0.0.0/0'
-          from_port 22
-          to_port 22
-          ip_protocol 'tcp'
-        },
-        -> {
-          cidr_ip '0.0.0.0/0'
-          from_port 443
-          to_port 443
-          ip_protocol 'tcp'
-        }
-      )
-    end
-  end
+  dynamic!(:security_group_with_rules, :puppet,
+    :ingress => {
+      :ssh => {
+        :protocol => 'tcp',
+        :ports => 22
+      },
+      :https => {
+        :protocol => 'tcp',
+        :ports => 443
+      },
+      :puppet_server => {
+        :protocol => 'tcp',
+        :ports => 8140,
+        :source_security_group => ref!(:puppet_security_group)
+      },
+      :puppetdb => {
+        :protocol => 'tcp',
+        :ports => 8081,
+        :source_security_group => ref!(:puppet_security_group)
+      },
+      :mcollective => {
+        :protocol => 'tcp',
+        :ports => 61613,
+        :source_security_group => ref!(:puppet_security_group)
+      },
+      :orchestration => {
+        :protocol => 'tcp',
+        :ports => 8142,
+        :source_security_group => ref!(:puppet_security_group)
+      }
+    }
+  )
 
-
-  [ 8140, 8142, 61613 ].each do |port|
-    dynamic!(:ec2_security_group_ingress, "#{port}".to_sym) do
-      properties do
-        group_id  ref!(:puppet_ec2_security_group)
-        from_port port
-        to_port port
-        ip_protocol 'tcp'
-        source_security_group_id  ref!(:puppet_ec2_security_group)
-      end
-    end
-  end
 
   resources(:puppet_enterprise_instance_profile) do
     type 'AWS::IAM::InstanceProfile'
@@ -60,7 +60,7 @@ SparkleFormation.new(:puppet_enterprise).load(:base, :compute).overrides do
           associate_public_ip_address true
           device_index 0
           subnet_id select!(1, ref!(:public_subnet_ids))
-          group_set [ ref!(:puppet_ec2_security_group) ]
+          group_set [ ref!(:puppet_security_group) ]
         }
       )
       image_id map!(:official_amis, region!, 'trusty')
@@ -141,7 +141,7 @@ SparkleFormation.new(:puppet_enterprise).load(:base, :compute).overrides do
       value attr!(:puppet_enterprise_ec2_instance, :public_dns_name)
     end
     puppet_security_group_id do
-      value attr!(:puppet_ec2_security_group, :group_id)
+      value attr!(:puppet_security_group, :group_id)
     end
   end
 
