@@ -43,12 +43,14 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
       metadata('AWS::CloudFormation::Init') do
         _camel_keys_set(:auto_disable)
         configSets do
-          default [ :configure_aws_hostname ]
+          default [ :configure_aws_hostname, :install_puppet_agent, :cfn_hup ]
           sensu_enterprise [ ]
           sensu [ ]
         end
       end
       registry!(:configure_aws_hostname)
+      registry!(:cfn_hup)
+      registry!(:install_puppet_agent)
       registry!(:sensu_rabbitmq, :queue_password => ref!(:rabbitmq_password))
       registry!(:sensu_redis)
       registry!(:sensu_enterprise, :queue_password => ref!(:rabbitmq_password))
@@ -65,6 +67,7 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
           end
         end
       end
+    end
 
     sensu_instance_profile do
       type 'AWS::IAM::InstanceProfile'
