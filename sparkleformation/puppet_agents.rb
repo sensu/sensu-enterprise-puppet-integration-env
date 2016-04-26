@@ -15,7 +15,7 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
     metadata('AWS::CloudFormation::Init') do
       _camel_keys_set(:auto_disable)
       configSets do |sets|
-        sets.default += [ 'configure_aws_hostname', 'configure_ntp', 'install_puppet_agent' ]
+        sets.default += [ 'configure_aws_hostname', 'configure_ntp', 'cfn_hup', 'install_puppet_agent' ]
         sets.sensu [ ]
       end
     end
@@ -25,6 +25,7 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
     )
     registry!(:configure_aws_hostname)
     registry!(:configure_ntp)
+    registry!(:cfn_hup, :puppet_agent, :resource_name => process_key!(:puppet_agent_launch_configuration))
     registry!(:install_puppet_agent)
   end
 end

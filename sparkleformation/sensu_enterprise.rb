@@ -60,7 +60,7 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
         end
       end
       registry!(:configure_aws_hostname)
-      registry!(:cfn_hup)
+      registry!(:cfn_hup, :sensu_enterprise, :resource_name => process_key!(:sensu_ec2_instance))
       registry!(:install_puppet_agent)
       registry!(:sensu_rabbitmq, :queue_password => ref!(:rabbitmq_password))
       registry!(:sensu_redis)

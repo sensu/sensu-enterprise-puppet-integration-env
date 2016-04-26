@@ -1,4 +1,4 @@
-SfnRegistry.register(:cfn_hup) do
+SfnRegistry.register(:cfn_hup) do |name, config = {}|
   metadata('AWS::CloudFormation::Init') do
     _camel_keys_set(:auto_disable)
     cfn_hup do
@@ -15,10 +15,10 @@ SfnRegistry.register(:cfn_hup) do
         content join!(
           "[re-init]\n",
           "triggers=post.update\n",
-          "path=Resources.#{resource_name!}.Metadata\n",
+          "path=Resources.", config[:resource_name], ".Metadata\n",
           "action=cfn-init --verbose --region ", region!,
           ' -s ', stack_name!,
-          " -r #{resource_name!} ",
+          " -r ", config[:resource_name],
           " --configsets ", [ config.fetch(:configsets, :default) ].compact.flatten.join(','), "\n",
           "runas=root\n"
         )

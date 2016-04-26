@@ -79,10 +79,12 @@ SparkleFormation.new(:puppet_enterprise).load(:base, :compute).overrides do
 
     registry!(:configure_aws_hostname)
     registry!(:configure_ntp)
+    registry!(:cfn_hup, :puppet_enterprise, :resource_name => process_key!(:puppet_enterprise_ec2_instance))
+
     metadata('AWS::CloudFormation::Init') do
       _camel_keys_set(:auto_disable)
       configSets do |sets|
-        default [ 'configure_aws_hostname', 'configure_ntp', 'install_puppet_enterprise' ]
+        default [ 'configure_aws_hostname', 'configure_ntp', 'cfn_hup', 'install_puppet_enterprise' ]
       end
       install_puppet_enterprise do
         sources do
