@@ -46,11 +46,14 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
       metadata('AWS::CloudFormation::Init') do
         _camel_keys_set(:auto_disable)
         configSets do
-          default [ :configure_aws_hostname, :install_puppet_agent, :cfn_hup, :create_keystores, :sensu_enterprise_config ]
+          default [ :configure_aws_hostname, :install_puppet_agent, :cfn_hup, :create_keystores ]
           sensu_enterprise [ ]
           sensu [ ]
         end
         create_keystores do
+          packages.apt do
+            set!('openjdk-7-jre-headless', [])
+          end
           commands('00_mkdir_etc_sensu_ssl_puppet') do
             command 'mkdir -p /etc/sensu/ssl/puppet'
           end
@@ -65,9 +68,6 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
           commands('03_import_p12_to_keystore') do
             command 'keytool -importkeystore  -destkeystore /etc/sensu/ssl/puppet/keystore.jks -srckeystore /tmp/sensu-enterprise-temp.p12 -srcstoretype PKCS12 -alias sensu-enterprise -srcstorepass secret -deststorepass secret'
             test 'test ! -e /etc/sensu/ssl/puppet/keystore.jks'
-          end
-          commands('04_chown_to_sensu') do
-            command 'chown -R sensu.sensu /etc/sensu/ssl'
           end
         end
         sensu_enterprise_config do
@@ -95,15 +95,8 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
             end
           end
         end
-
-        services.sysvinit('sensu-enterprise') do
-          enabled 'true'
-          ensureRunning 'true'
-          files [
-            '/etc/sensu/conf.d/integrations/puppet.json',
-            '/etc/sensu/conf.d/keepalive.json',
-            '/etc/sensu/conf.d/checks/check_truth.json'
-          ]
+        commands('create_config_dir') do
+          command 'mkdir -p /etc/sensu && chown -R sensu.sensu /etc/sensu'
         end
       end
       registry!(:configure_aws_hostname)
