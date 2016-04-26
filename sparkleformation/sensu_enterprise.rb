@@ -12,6 +12,7 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
     end
 
     puppet_security_group_id.type 'String'
+    puppet_server_hostname.type 'String'
   end
 
   resources do
@@ -45,20 +46,64 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
       metadata('AWS::CloudFormation::Init') do
         _camel_keys_set(:auto_disable)
         configSets do
-          default [ :configure_aws_hostname, :install_puppet_agent, :cfn_hup ]
+          default [ :configure_aws_hostname, :install_puppet_agent, :cfn_hup, :create_keystores, :sensu_enterprise_config ]
           sensu_enterprise [ ]
           sensu [ ]
         end
-        sensu_enterprise do
-          files('/etc/sensu/conf.d/checks/check_truth.json') do
-            content do
-              checks.check_truth do
-                subscribers ['all']
-                command 'true'
-                interval 10
+        create_keystores do
+          commands('00_mkdir_etc_sensu_ssl_puppet') do
+            command 'mkdir -p /etc/sensu/ssl/puppet'
+          end
+          commands('01_import_ca_to_truststore') do
+            command 'keytool -import -alias "CA" -file /etc/puppetlabs/puppet/ssl/certs/ca.pem -keystore /etc/sensu/ssl/puppet/truststore.jks -storepass secret -noprompt'
+            test 'test ! -e /etc/sensu/ssl/puppet/truststore.jks'
+          end
+          commands('02_generate_p12') do
+            command 'cat /etc/puppetlabs/puppet/ssl/private_keys/$(hostname -f).pem /etc/puppetlabs/puppet/ssl/certs/$(hostname -f).pem | openssl pkcs12 -export -out /tmp/sensu-enterprise-temp.p12 -name sensu-enterprise -passout pass:secret'
+            test 'test ! -e /etc/sensu/ssl/puppet/keystore.jks'
+          end
+          commands('03_import_p12_to_keystore') do
+            command 'keytool -importkeystore  -destkeystore /etc/sensu/ssl/puppet/keystore.jks -srckeystore /tmp/sensu-enterprise-temp.p12 -srcstoretype PKCS12 -alias sensu-enterprise -srcstorepass secret -deststorepass secret'
+            test 'test ! -e /etc/sensu/ssl/puppet/keystore.jks'
+          end
+          commands('04_chown_to_sensu') do
+            command 'chown -R sensu.sensu /etc/sensu/ssl'
+          end
+        end
+        sensu_enterprise_config do
+          files('/etc/sensu/conf.d/integrations/puppet.json') do
+            content.puppet do
+              endpoint join!('https://', ref!(:puppet_server_hostname), ':8081/pdb/query/v4/nodes/')
+              ssl do
+                keystore_file '/etc/sensu/ssl/puppet/keystore.jks'
+                keystore_password 'secret'
+                truststore_file '/etc/sensu/ssl/puppet/truststore.jks'
+                truststore_password 'secret'
               end
             end
           end
+          files('/etc/sensu/conf.d/checks/check_truth.json') do
+            content '{ "checks": { "check_truth": { "command": "true", "interval": 10, "subscribers": ["all"] } } }'
+          end
+
+          files('/etc/sensu/conf.d/keepalive.json') do
+            content do
+              handlers.keepalive do
+                type 'set'
+                handlers ['puppet']
+              end
+            end
+          end
+        end
+
+        services.sysvinit('sensu-enterprise') do
+          enabled 'true'
+          ensureRunning 'true'
+          files [
+            '/etc/sensu/conf.d/integrations/puppet.json',
+            '/etc/sensu/conf.d/keepalive.json',
+            '/etc/sensu/conf.d/checks/check_truth.json'
+          ]
         end
       end
       registry!(:configure_aws_hostname)
