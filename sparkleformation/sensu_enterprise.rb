@@ -47,6 +47,17 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
           sensu_enterprise [ ]
           sensu [ ]
         end
+        sensu_enterprise do
+          files('/etc/sensu/conf.d/checks/check_truth.json') do
+            content do
+              checks.check_truth do
+                subscribers ['all']
+                command 'true'
+                interval 10
+              end
+            end
+          end
+        end
       end
       registry!(:configure_aws_hostname)
       registry!(:cfn_hup)
@@ -55,18 +66,6 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
       registry!(:sensu_redis)
       registry!(:sensu_enterprise, :queue_password => ref!(:rabbitmq_password))
       registry!(:sensu_client, :queue_password => ref!(:rabbitmq_password))
-
-      sensu_enterprise do
-        files('/etc/sensu/conf.d/checks/check_truth.json') do
-          content do
-            checks.check_truth do
-              subscribers ['all']
-              command 'true'
-              interval 10
-            end
-          end
-        end
-      end
     end
 
     sensu_instance_profile do
