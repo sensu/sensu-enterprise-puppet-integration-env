@@ -49,14 +49,38 @@ SparkleFormation.dynamic(:asg) do |name, config={}|
       security_groups [ config.fetch(:security_groups, ref!("#{name}_ec2_security_group".to_sym)) ].compact.flatten
       user_data registry!(:cfn_user_data, name,
         :init_resource => "#{name}_launch_configuration".to_sym,
-        :signal_resource => "#{name}_auto_scaling_group".to_sym
-        )
+        :signal_resource => "#{name}_auto_scaling_group".to_sym,
+        :configsets => [ config.fetch(:configsets, :default) ].compact.flatten
+      )
     end
 
     metadata('AWS::CloudFormation::Init') do
       _camel_keys_set(:auto_disable)
       configSets do
         default []
+      end
+      cfn_hup do
+        files('/etc/cfn/cfn-hup.conf') do
+          content join!(
+            "[main]\n",
+            "interval=2\n",
+            "region=", region!, "\n",
+            "stack=", stack_id!, "\n"
+          )
+        end
+
+        files('/etc/cfn/hooks.conf') do
+          content join!(
+            "[re-init]\n",
+            "triggers=post.update\n",
+            "path=Resources.#{resource_name!}.Metadata\n",
+            "action=cfn-init --verbose --region ", region!,
+            ' -s ', stack_name!,
+            " -r #{resource_name!} ",
+            " --configsets ", [ config.fetch(:configsets, :default) ].compact.flatten.join(','), "\n",
+            "runas=root\n"
+          )
+        end
       end
     end
   end
@@ -74,13 +98,6 @@ SparkleFormation.dynamic(:asg) do |name, config={}|
           propagate_at_launch true
         }
       )
-      # notification_configurations array!(
-      #   -> {
-      #     notification_types ['autoscaling:EC2_INSTANCE_LAUNCH', 'autoscaling:EC2_INSTANCE_TERMINATE']
-      #     set!('TopicARN', ref!(:internal_zone_sns_topic))
-      #   }
-      # )
-
     end
 
     creation_policy.resource_signal do
