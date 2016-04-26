@@ -96,11 +96,11 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
           end
         end
         commands('create_config_dir') do
-          command 'mkdir -p /etc/sensu && chown -R sensu.sensu /etc/sensu'
+          command 'mkdir -p /etc/sensu && chown -R sensu.sensu /etc/sensu && chmod o-r /etc/sensu/ssl/puppet/*.jks'
         end
       end
       registry!(:configure_aws_hostname)
-      registry!(:cfn_hup, :sensu_enterprise, :resource_name => process_key!(:sensu_ec2_instance))
+      registry!(:cfn_hup, :sensu_enterprise, :configsets => [:default, :sensu_enterprise, :sensu], :resource_name => process_key!(:sensu_ec2_instance))
       registry!(:install_puppet_agent)
       registry!(:sensu_rabbitmq, :queue_password => ref!(:rabbitmq_password))
       registry!(:sensu_redis)
