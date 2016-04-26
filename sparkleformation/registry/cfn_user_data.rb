@@ -12,7 +12,7 @@ SfnRegistry.register(:cfn_user_data) do |_name, _config|
         stack_name!,
         " -r #{process_key!(_config[:init_resource])} --role ",
         ref!(:cfn_role),
-        ' --configsets default',
+        ' --configsets ', [_config.fetch(:configsets, 'default')].flatten.compact.join(','),
         "\n",
         "/usr/local/bin/cfn-signal -e $? --region ",
         region!,
