@@ -18,6 +18,22 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
         sets.default += [ 'configure_aws_hostname', 'configure_ntp', 'cfn_hup', 'install_puppet_agent' ]
         sets.sensu [ ]
       end
+      sensu_client_install do
+        files('/etc/sensu/config.json') do
+          content do
+            client do
+              keepalive.thresholds do
+                warning 40
+                critical 60
+              end
+            end
+          end
+        end
+
+        services.sysvinit('sensu-client'.to_sym) do
+          files ['/etc/sensu/config.json']
+        end
+      end
     end
     registry!(:sensu_client,
       :queue_password => ref!(:rabbitmq_password),
