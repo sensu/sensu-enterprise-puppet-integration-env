@@ -15,23 +15,19 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
     metadata('AWS::CloudFormation::Init') do
       _camel_keys_set(:auto_disable)
       configSets do |sets|
-        sets.default += [ 'configure_aws_hostname', 'configure_ntp', 'cfn_hup', 'install_puppet_agent' ]
-        sets.sensu [ ]
+        sets.default += [
+          'configure_aws_hostname',
+          'configure_ntp',
+          'cfn_hup',
+          'install_puppet_agent'
+        ]
       end
       sensu_client_install do
-        files('/etc/sensu/config.json') do
-          content do
-            client do
-              keepalive.thresholds do
-                warning 40
-                critical 60
-              end
-            end
-          end
+        files('/etc/sensu/conf.d/client_puppet_agent_overrides.json') do
+          content '{ "client": { "subscriptions": ["puppet_agent"], "keepalives": { "thresholds": { "warning": 40, "critical": 60 } } } }'
         end
-
         services.sysvinit('sensu-client'.to_sym) do
-          files ['/etc/sensu/config.json']
+          files ['/etc/sensu/conf.d/client_puppet_agent_overrides.json']
         end
       end
     end
