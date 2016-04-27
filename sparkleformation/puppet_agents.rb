@@ -25,7 +25,7 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
     )
     registry!(:configure_aws_hostname)
     registry!(:configure_ntp)
-    registry!(:cfn_hup, :puppet_agent, :resource_name => process_key!(:puppet_agent_launch_configuration))
+    registry!(:cfn_hup, :puppet_agent, :configsets => [:default, :sensu], :resource_name => process_key!(:puppet_agent_launch_configuration))
     registry!(:install_puppet_agent)
   end
 end
