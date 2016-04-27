@@ -70,6 +70,12 @@ SparkleFormation.new(:puppet_enterprise).load(:base, :compute).overrides do
         :init_resource => :puppet_enterprise_ec2_instance,
         :signal_resource => :puppet_enterprise_ec2_instance
       )
+      tags array!(
+        -> {
+          key 'Name'
+          value join!(stack_name!, 'Puppet Enterprise', :options => { :delimiter => ' ' })
+        }
+      )
     end
 
     creation_policy.resource_signal do

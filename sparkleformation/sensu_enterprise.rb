@@ -36,6 +36,12 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
           :signal_resource => :sensu_ec2_instance,
           :configsets => [ :default, :sensu_enterprise, :sensu ]
         )
+        tags array!(
+          -> {
+            key 'Name'
+            value join!(stack_name!, 'Sensu Enterprise', :options => { :delimiter => ' ' })
+          }
+        )
       end
       creation_policy do
         resource_signal do
