@@ -14,7 +14,7 @@ SparkleFormation.dynamic(:asg) do |name, config={}|
 
   parameters("#{name}_instance_type".to_sym) do
     type 'String'
-    default 'm3.medium'
+    default 't2.micro'
   end
 
   dynamic!(:iam_instance_profile, name) do
