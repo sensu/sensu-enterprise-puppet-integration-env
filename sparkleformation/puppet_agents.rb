@@ -11,6 +11,12 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
     :configsets => [:default, :sensu]
   )
 
+  resources(:puppet_agent_auto_scaling_group) do
+    serverspec do
+      spec_patterns [File.join(Dir.pwd, 'spec/puppet_agents/*_spec.rb')]
+    end
+  end
+
   resources(:puppet_agent_launch_configuration) do
     metadata('AWS::CloudFormation::Init') do
       _camel_keys_set(:auto_disable)
