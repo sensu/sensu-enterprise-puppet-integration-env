@@ -37,7 +37,7 @@ GEM
       unf (>= 0.0.5, < 1.0.0)
     graph (2.8.1)
     hashdiff (0.2.3)
-    hashie (3.4.3)
+    hashie (3.4.4)
     http (1.0.4)
       addressable (~> 2.3)
       http-cookie (~> 1.0)
@@ -59,10 +59,16 @@ GEM
     miasma-aws (0.3.4)
       miasma (>= 0.3.1, < 0.5)
     miasma-azure (0.1.4)
+    miasma-google (0.1.0)
+      miasma (>= 0.2.12)
+      mime-types
     miasma-open-stack (0.1.4)
     miasma-rackspace (0.1.2)
       miasma-open-stack
-    multi_json (1.11.3)
+    mime-types (3.0)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2016.0221)
+    multi_json (1.12.0)
     multi_xml (0.5.5)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
@@ -91,21 +97,22 @@ GEM
       rspec-its
       specinfra (~> 2.53)
     sfl (2.2)
-    sfn (2.2.0)
+    sfn (3.0.2)
       bogo-cli (>= 0.2.5, < 0.4)
       bogo-ui (>= 0.1.13, < 0.4)
       graph (~> 2.8.1)
       hashdiff (~> 0.2.2)
       miasma (>= 0.3.0, < 0.4)
-      miasma-aws (>= 0.3.0, < 0.4)
+      miasma-aws (>= 0.3.3, < 0.4)
       miasma-azure (>= 0.1.0, < 0.3)
+      miasma-google (>= 0.1.0, < 0.3)
       miasma-open-stack (>= 0.1.0, < 0.3)
       miasma-rackspace (>= 0.1.0, < 0.3)
       net-ssh
-      sparkle_formation (>= 2.1.2, < 3)
-    sfn-serverspec (0.1.4)
+      sparkle_formation (>= 3, < 4)
+    sfn-serverspec (1.0.0)
       serverspec (~> 2.24)
-      sfn (>= 1.0, < 3.0)
+      sfn (>= 3.0, < 4.0)
     slop (3.6.0)
     sparkle-pack-aws-amis (0.1.0)
       sparkle_formation
@@ -113,11 +120,11 @@ GEM
       aws-sdk-core (~> 2.2)
     sparkle-pack-aws-vpc (0.1.6)
       sparkle-pack-aws-availability-zones
-    sparkle_formation (2.1.8)
+    sparkle_formation (3.0.0)
       attribute_struct (>= 0.3.0, < 0.5)
       bogo
       multi_json
-    specinfra (2.57.1)
+    specinfra (2.57.2)
       net-scp
       net-ssh (>= 2.7, < 4.0)
       net-telnet
@@ -131,8 +138,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  sfn (~> 2.0)
-  sfn-serverspec
+  sfn (~> 3.0)
+  sfn-serverspec (~> 1.0)
   sparkle-pack-aws-amis (~> 0.1.0)
   sparkle-pack-aws-vpc (~> 0.1.6)
   sparkle-pack-sensu-enterprise!
