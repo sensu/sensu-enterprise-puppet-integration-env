@@ -52,7 +52,9 @@ SparkleFormation.new(:puppet_enterprise).load(:base, :compute).overrides do
 
   resources(:puppet_enterprise_ec2_instance) do
     type 'AWS::EC2::Instance'
-
+    serverspec do
+      spec_patterns [File.join(Dir.pwd, 'spec/puppet_enterprise/*_spec.rb')]
+    end
     properties do
       instance_type 'm3.large'
       network_interfaces array!(

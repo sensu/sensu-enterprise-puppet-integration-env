@@ -18,6 +18,9 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
   resources do
     sensu_ec2_instance do
       type 'AWS::EC2::Instance'
+      serverspec do
+        spec_patterns [File.join(Dir.pwd, 'spec/sensu_enterprise/*_spec.rb')]
+      end
       properties do
         image_id map!(:official_amis, region!, 'trusty')
         instance_type 'm3.large'
