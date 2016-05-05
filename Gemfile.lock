@@ -1,8 +1,9 @@
 GIT
   remote: git@github.com:hw-labs/sparkle-pack-sensu-enterprise.git
-  revision: 38f4d2ec7fbe3e7fc411935354f993080640699e
+  revision: 75b9f5ca96cdcb2972da9c5196cbc44f3eb76fab
+  ref: updates/strip-down-level-up
   specs:
-    sparkle-pack-sensu-enterprise (0.1.0)
+    sparkle-pack-sensu-enterprise (0.1.1)
 
 GEM
   remote: https://rubygems.org/
