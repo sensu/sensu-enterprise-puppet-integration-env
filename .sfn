@@ -6,7 +6,6 @@ Configuration.new do
     'sparkle-pack-sensu-enterprise'
   ]
   callbacks do
-    require ['sfn-serverspec']
     default ['serverspec_validator']
   end
   sfn_serverspec do
