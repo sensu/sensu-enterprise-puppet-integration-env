@@ -12,7 +12,7 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
 
   resources(:puppet_agent_auto_scaling_group) do
     serverspec do
-      spec_patterns [File.join(Dir.pwd, 'spec/puppet_agents/*_spec.rb')]
+      spec_patterns [ 'shared/sensu_client_spec.rb', 'puppet_agents/*_spec.rb' ].map {|f|  File.join(Dir.pwd, 'spec', f) }
     end
   end
 

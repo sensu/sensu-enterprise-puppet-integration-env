@@ -21,7 +21,7 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
     sensu_ec2_instance do
       type 'AWS::EC2::Instance'
       serverspec do
-        spec_patterns [File.join(Dir.pwd, 'spec/sensu_enterprise/*_spec.rb')]
+        spec_patterns [ 'shared/sensu_client_spec.rb', 'sensu_enterprise/*_spec.rb' ].map {|f|  File.join(Dir.pwd, 'spec', f) }
       end
       properties do
         image_id map!(:official_amis, region!, 'trusty')
