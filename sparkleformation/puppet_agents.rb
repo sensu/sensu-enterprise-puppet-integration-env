@@ -28,7 +28,7 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
           :sensu_core_repo,
           :sensu_core_install,
           :sensu_config,
-          :sensu_start
+          :sensu_services
         ]
       end
 
@@ -38,16 +38,23 @@ SparkleFormation.new(:puppet_agents).load(:base, :compute).overrides do
         end
       end
 
-      sensu_start do
+
+      sensu_services do
         services.sysvinit('sensu-client') do
           enabled 'true'
           ensureRunning 'true'
+          files [ '/etc/sensu/config.json', '/etc/sensu/conf.d/client.json' ]
         end
       end
     end
 
     registry!(:sensu_core)
-    registry!(:sensu_config)
+    registry!(
+      :sensu_config,
+      :puppet_agent,
+      :rabbitmq_host => ref!(:rabbitmq_hostname),
+      :rabbitmq_password => ref!(:rabbitmq_password)
+    )
     registry!(:configure_aws_hostname)
     registry!(:configure_ntp)
     registry!(:cfn_hup, :puppet_agent, :resource_name => process_key!(:puppet_agent_launch_configuration))

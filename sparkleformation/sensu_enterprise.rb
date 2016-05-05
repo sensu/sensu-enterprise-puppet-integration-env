@@ -144,12 +144,6 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
 
           files('/etc/sensu/config.json') do
             content do
-              rabbitmq do
-                host '127.0.0.1'
-                vhost '/sensu'
-                user 'sensu'
-                password ref!(:rabbitmq_password)
-              end
               redis do
                 host 'localhost'
               end

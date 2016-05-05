@@ -20,6 +20,18 @@ SfnRegistry.register(:sensu_config) do |_name, _config = {}|
         command '/usr/local/bin/sensu_client_generator.sh'
         test 'test ! -e /etc/sensu/conf.d/client.json'
       end
+
+      files('/etc/sensu/config.json') do
+        content do
+          rabbitmq array!(
+            -> {
+              host _config.fetch(:rabbitmq_host, '127.0.0.1')
+              vhost _config.fetch(:rabbitmq_vhost, '/sensu')
+              user _config.fetch(:rabbitmq_user, 'sensu')
+              password _config.fetch(:rabbitmq_password, 'secret')
+            })
+        end
+      end
     end
   end
 end
