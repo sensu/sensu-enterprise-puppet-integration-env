@@ -12,4 +12,8 @@ describe 'sensu enterprise' do
     it { should exist }
   end
 
+  describe command('curl -s -i http://localhost:4567/health?consumers=1') do
+    its(:stdout) { should match "HTTP/1.1 204 No Content" }
+  end
+
 end
