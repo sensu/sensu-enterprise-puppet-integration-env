@@ -141,39 +141,38 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
               end
             end
           end
-        end
 
-        files('/etc/sensu/config.json') do
-          content do
-            rabbitmq do
-              host '127.0.0.1'
-              vhost '/sensu'
-              user 'sensu'
-              password ref!(:rabbitmq_password)
-            end
-            redis do
-              host 'localhost'
-            end
-            api do
-              host 'locahost'
-            end
-          end
-        end
-
-        files('/etc/sensu/dashboard.json') do
-          content do
-            sensu array!(
-              -> {
-                name 'Sensu Enterprise Eval'
+          files('/etc/sensu/config.json') do
+            content do
+              rabbitmq do
+                host '127.0.0.1'
+                vhost '/sensu'
+                user 'sensu'
+                password ref!(:rabbitmq_password)
+              end
+              redis do
                 host 'localhost'
-              }
-            )
-            dashboard do
-              host '0.0.0.0'
+              end
+              api do
+                host 'locahost'
+              end
+            end
+          end
+
+          files('/etc/sensu/dashboard.json') do
+            content do
+              sensu array!(
+                -> {
+                  name 'Sensu Enterprise Eval'
+                  host 'localhost'
+                }
+              )
+              dashboard do
+                host '0.0.0.0'
+              end
             end
           end
         end
-
         sensu_services do
           services.sysvinit('sensu-enterprise') do
             files [ '/etc/sensu/config.json' ]
