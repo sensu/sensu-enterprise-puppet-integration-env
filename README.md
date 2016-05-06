@@ -19,5 +19,5 @@ bundle exec sfn create sensu-puppet-test --file infrastructure
 2. observe on puppet and sensu dashboards that clients are registered etc.
 3. note that autoscaling puppet agent instances are configured to auto register with puppet server and run sensu client
 4. terminate instances in the autoscaling group, will cause sensu to alert on keepalives
-5. revoking certificates on the puppet enterprise node will cause sensu to delete the associated sensu client object
+5. purging nodes on the puppet enterprise node will cause sensu to delete the associated sensu client object (e.g. `puppet node purge foo.example.com`)
 6. observe via dashboard that sensu keepalive alerts are automatically resolved by puppet integration
