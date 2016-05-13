@@ -6,8 +6,4 @@ describe 'puppet agents' do
     it { should be_running }
   end
 
-  describe process('sensu-client') do
-    it { should be_running }
-  end
-
 end

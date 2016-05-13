@@ -6,11 +6,10 @@ Configuration.new do
     'sparkle-pack-sensu-enterprise'
   ]
   callbacks do
-    require ['sfn-serverspec']
     default ['serverspec_validator']
   end
   sfn_serverspec do
-    global_spec_patterns [File.join(Dir.pwd, 'spec/base/*_spec.rb')]
+    global_spec_patterns [File.join(Dir.pwd, 'spec/shared/base_spec.rb')]
     ssh_user 'ubuntu'
     ssh_key_paths [ ENV['AWS_KEY_PATH'] ]
   end

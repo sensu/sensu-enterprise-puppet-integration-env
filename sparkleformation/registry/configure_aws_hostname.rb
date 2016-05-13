@@ -6,13 +6,15 @@ SfnRegistry.register(:configure_aws_hostname) do
         # the last 'search' directive in compiled /etc/resolv.conf should win, so bring on the hacks
         # please don't copy this pattern for production :)
         mode "000644"
-        content "search ec2.internal compute-1.amazonaws.com\n"
+        content join!("search ec2.internal ", region!, ".compute.amazonaws.com\n")
       end
       files('/usr/local/bin/ec2-hostname.sh') do
         mode "000755"
         content join!(
                   "#!/bin/bash\n",
-                  "DOMAIN=compute-1.amazonaws.com\n",
+                  "DOMAIN=",
+                  region!,
+                  ".compute.amazonaws.com\n",
                   "HOSTNAME=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname | cut -d . -f 1)\n",
                   "LOCAL_IPV4=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)\n",
                   "hostname $HOSTNAME.$DOMAIN\n",

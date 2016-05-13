@@ -1,6 +1,8 @@
 SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
   registry!(:official_amis, :sensu, :type => 'ebs')
 
+  se_config_run_list = [ :default, :sensu_enterprise ]
+
   parameters do
     public_subnet_ids do
       type 'CommaDelimitedList'
@@ -19,7 +21,7 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
     sensu_ec2_instance do
       type 'AWS::EC2::Instance'
       serverspec do
-        spec_patterns [File.join(Dir.pwd, 'spec/sensu_enterprise/*_spec.rb')]
+        spec_patterns [ 'shared/sensu_client_spec.rb', 'sensu_enterprise/*_spec.rb' ].map {|f|  File.join(Dir.pwd, 'spec', f) }
       end
       properties do
         image_id map!(:official_amis, region!, 'trusty')
@@ -37,7 +39,7 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
         registry!(:cfn_user_data, :sensu,
           :init_resource => :sensu_ec2_instance,
           :signal_resource => :sensu_ec2_instance,
-          :configsets => [ :default, :sensu_enterprise, :sensu ]
+          :configsets => se_config_run_list
         )
         tags array!(
           -> {
@@ -52,13 +54,43 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
           timeout 'PT15M'
         end
       end
+      registry!(:configure_aws_hostname)
+      registry!(:configure_ntp)
+      registry!(
+        :cfn_hup,
+        :sensu_enterprise,
+        :resource_name => process_key!(:sensu_ec2_instance),
+        :configsets => se_config_run_list
+      )
+      registry!(:install_puppet_agent)
+      registry!(:sensu_rabbitmq, :queue_password => ref!(:rabbitmq_password))
+      registry!(:sensu_core)
+      registry!(:sensu_config)
+      registry!(:sensu_redis)
+      registry!(:sensu_enterprise)
       metadata('AWS::CloudFormation::Init') do
         _camel_keys_set(:auto_disable)
         configSets do
-          default [ :configure_aws_hostname, :install_puppet_agent, :cfn_hup, :create_keystores ]
-          sensu_enterprise [ ]
-          sensu [ ]
+          default [
+            :configure_aws_hostname,
+            :configure_ntp,
+            :install_puppet_agent,
+            :cfn_hup
+          ]
+          sensu_enterprise [
+            :create_keystores,
+            :sensu_core_repo,
+            :sensu_core_install,
+            :sensu_rabbitmq,
+            :sensu_redis,
+            :sensu_enterprise_repo,
+            :sensu_enterprise_install,
+            :sensu_enterprise_dashboard_install,
+            :sensu_config,
+            :sensu_services
+          ]
         end
+
         create_keystores do
           packages.apt do
             set!('openjdk-7-jre-headless', [])
@@ -79,7 +111,12 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
             test 'test ! -e /etc/sensu/ssl/puppet/keystore.jks'
           end
         end
-        sensu_enterprise_config do
+
+        sensu_config do
+          commands('99_create_config_dir') do
+            command 'mkdir -p /etc/sensu && chown -R sensu.sensu /etc/sensu && chmod o-r /etc/sensu/ssl/puppet/*.jks'
+          end
+
           files('/etc/sensu/conf.d/integrations/puppet.json') do
             content.puppet do
               endpoint join!('https://', ref!(:puppet_server_hostname), ':8081/pdb/query/v4/nodes/')
@@ -91,11 +128,12 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
               end
             end
           end
+
           files('/etc/sensu/conf.d/checks/check_truth.json') do
             content '{ "checks": { "check_truth": { "command": "true", "interval": 10, "subscribers": ["all"] } } }'
           end
 
-          files('/etc/sensu/conf.d/keepalive.json') do
+          files('/etc/sensu/conf.d/handlers/keepalive.json') do
             content do
               handlers.keepalive do
                 type 'set'
@@ -103,18 +141,52 @@ SparkleFormation.new(:sensu_enterprise).load(:base, :compute).overrides do
               end
             end
           end
+
+          files('/etc/sensu/config.json') do
+            content do
+              redis do
+                host 'localhost'
+              end
+              api do
+                host 'locahost'
+              end
+            end
+          end
+
+          files('/etc/sensu/dashboard.json') do
+            content do
+              sensu array!(
+                -> {
+                  name 'Sensu Enterprise Eval'
+                  host 'localhost'
+                }
+              )
+              dashboard do
+                host '0.0.0.0'
+              end
+            end
+          end
         end
-        commands('create_config_dir') do
-          command 'mkdir -p /etc/sensu && chown -R sensu.sensu /etc/sensu && chmod o-r /etc/sensu/ssl/puppet/*.jks'
+        sensu_services do
+          services.sysvinit('sensu-enterprise') do
+            files [ '/etc/sensu/config.json' ]
+            enabled 'true'
+            ensureRunning 'true'
+          end
+
+          services.sysvinit('sensu-client') do
+            files [ '/etc/sensu/config.json', '/etc/sensu/conf.d/client.json' ]
+            enabled 'true'
+            ensureRunning 'true'
+          end
+
+          services.sysvinit('sensu-enterprise-dashboard') do
+            files [ '/etc/sensu/dashboard.json' ]
+            enabled 'true'
+            ensureRunning 'true'
+          end
         end
       end
-      registry!(:configure_aws_hostname)
-      registry!(:cfn_hup, :sensu_enterprise, :configsets => [:default, :sensu_enterprise, :sensu], :resource_name => process_key!(:sensu_ec2_instance))
-      registry!(:install_puppet_agent)
-      registry!(:sensu_rabbitmq, :queue_password => ref!(:rabbitmq_password))
-      registry!(:sensu_redis)
-      registry!(:sensu_enterprise, :queue_password => ref!(:rabbitmq_password))
-      registry!(:sensu_client, :queue_password => ref!(:rabbitmq_password))
     end
 
     sensu_instance_profile do
