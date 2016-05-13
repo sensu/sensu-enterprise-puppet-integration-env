@@ -105,13 +105,15 @@ SparkleFormation.new(:puppet_enterprise).load(:base, :compute).overrides do
         end
 
         files('/etc/puppetlabs/puppet/autosign.conf') do
-          content '*.compute-1.amazonaws.com'
+          content join!('*.', region!, '.compute.amazonaws.com')
         end
 
         files("/usr/src/#{pe_release_arch}/write-answers.sh") do
           content join!(
             "#!/bin/bash\n",
-            "DOMAIN=compute-1.amazonaws.com\n",
+            "DOMAIN=",
+            region!,
+            ".compute.amazonaws.com\n",
             "HOSTNAME=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname | cut -d . -f 1)\n",
             "LOCAL_IPV4=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)\n",
             "cat <<EOF > /usr/src/#{pe_release_arch}/answers.txt\n",
