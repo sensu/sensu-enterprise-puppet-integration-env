@@ -1,7 +1,7 @@
 GIT
   remote: git@github.com:hw-labs/sparkle-pack-sensu-enterprise.git
-  revision: 75b9f5ca96cdcb2972da9c5196cbc44f3eb76fab
-  ref: updates/strip-down-level-up
+  revision: b52e92eda68b60e54187dcc4994d24160ceb0188
+  ref: develop
   specs:
     sparkle-pack-sensu-enterprise (0.1.1)
 
@@ -146,4 +146,4 @@ DEPENDENCIES
   sparkle-pack-sensu-enterprise!
 
 BUNDLED WITH
-   1.10.6
+   1.11.2
